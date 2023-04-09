@@ -103,32 +103,14 @@ class SortedTableMap(MapBase):
             return None
         return item._key, item._value
     
-    def find_range(self, start=None, stop=None):
-        """Yield (key, value) pairs of items in the map where start <= key < stop.
-
-        If start is None, yield all items from the beginning of the map.
-        If stop is None, yield all items until the end of the map.
-
-        Args:
-            start (optional): The inclusive starting key of the range.
-            stop (optional): The exclusive ending key of the range.
-
-        Yields:
-            A tuple of (key, value) pairs in the range of start and stop.
-
-        Raises:
-            ValueError: If stop is less than start.
-
-        """
-        if start is not None and stop is not None and stop < start:
-            raise ValueError("stop must be greater than or equal to start")
-
-        start_index = self._find_index(start) if start is not None else 0
-
-        for item in self._table[start_index:]:
-            if stop is not None and item._key >= stop:
-                break
-            yield item._key, item._value
+    def find_range(self, start, stop):
+        if start is None:
+            j = 0
+        else:
+            j = self._find_index(start)  # find first result
+        while j < len(self._table) and (stop is None or (not self._table[j]._key > stop and self._table[j]._key != stop)):
+            yield (self._table[j]._key, self._table[j]._value)
+            j += 1
 
 
 
