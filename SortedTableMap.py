@@ -11,10 +11,14 @@ class SortedTableMap(MapBase):
         for item in self._table:
             yield item._key, item._value
 
-    def _find_index(self, k):
+    def _find_index(self, k, low=None, high=None):
+        if low is None:
+            low = 0
+        if high is None:
+            high = len(self) - 1
+
         def _find_index_inner(k, low, high):
             if high < low:
-                # print("len:{0}, low:{1}, high:{2}".format(len(self), low, high))
                 return low
             mid = (low + high) // 2
             if k == self._table[mid]._key:
@@ -23,7 +27,8 @@ class SortedTableMap(MapBase):
                 return _find_index_inner(k, low, mid - 1)
             else:
                 return _find_index_inner(k, mid + 1, high)
-        return _find_index_inner(k, 0, len(self) - 1)
+
+        return _find_index_inner(k, low, high)
 
     def __getitem__(self, k):
         index = self._find_index(k)
@@ -97,6 +102,36 @@ class SortedTableMap(MapBase):
         else:
             return None
         return item._key, item._value
+    
+    def find_range(self, start=None, stop=None):
+        """Yield (key, value) pairs of items in the map where start <= key < stop.
+
+        If start is None, yield all items from the beginning of the map.
+        If stop is None, yield all items until the end of the map.
+
+        Args:
+            start (optional): The inclusive starting key of the range.
+            stop (optional): The exclusive ending key of the range.
+
+        Yields:
+            A tuple of (key, value) pairs in the range of start and stop.
+
+        Raises:
+            ValueError: If stop is less than start.
+
+        """
+        if start is not None and stop is not None and stop < start:
+            raise ValueError("stop must be greater than or equal to start")
+
+        start_index = self._find_index(start) if start is not None else 0
+
+        for item in self._table[start_index:]:
+            if stop is not None and item._key >= stop:
+                break
+            yield item._key, item._value
+
+
+
 
 if __name__ == "__main__":
     a = SortedTableMap()

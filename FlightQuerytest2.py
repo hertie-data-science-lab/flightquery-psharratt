@@ -91,7 +91,7 @@ class FlightQuery(SortedTableMap):
 a = FlightQuery()
 
 # Create flight key-value pairs using 'for' loop
-s = [("A", "B", 622, 1200, "No1"), ("A", "B", 622, 1230, "No2"), ("A", "B", 622, 1300, "No3"), ("A", "B", 620, 1330, "No4"), ("A", "B", 630, 1400, "No5"), ("A", "B", 624, 1430, "No6")]
+s = [("A", "B", 622, 1200, "Flight No1"), ("A", "B", 622, 1230, "Flight No2"), ("A", "C", 622, 1300, "Flight No3"), ("A", "B", 620, 1330, "Flight No4"), ("C", "B", 630, 1400, "Flight No5"), ("A", "B", 624, 1430, "Flight No6")]
 for each in s:
     key = a.Key(each[0], each[1], each[2], each[3])
     value = each[4]
@@ -99,17 +99,33 @@ for each in s:
 
 print(len(a))
 
+                        
+# Interface for inputing user queries
+print("""✈︎✈︎✈︎ Welcome to GenericFlightBooking.Com! ✈︎✈︎✈︎
+      
+Please follow the instructions to complete your query:
+    """)
+    
+origin = input("1. Enter origin airport: ") or None
+dest = input("2. Enter destination airport: ") or None
+earliest_date = input("3. Earliest Date (or press Enter for no preference): ") or None
+earliest_time = input("4. Earliest Time (or press Enter for no preference): ") or None
+latest_date = input("5. Latest Date (or press Enter for no preference): ") or None
+latest_time = input("6. Latest time (or press Enter for no preference): ") or None
 
-''' Please put in your lower limit (k1) and upper limit (k2); note that the limits themselves will be excluded in result
-    Use "None" to imply flexibility e.g. None in K1 means no lower limit None in any K2 means no prefrences concerning the upper limit
-'''
+# Creating Key objects for search criteria
+k1 = a.Key(origin, dest, earliest_date, earliest_time)
+k2 = a.Key(origin, dest, latest_date, latest_time)
 
-k1 = a.Key("A", "B", None, 1000) #  
-k2 = a.Key("A", "B", 630, 1500) # Please put in the upper limite (note that the limit its)
+print(k1)
+print(k2)
+print("--- Please choose from the following flights: ---")
 
-
+# Run the query and print results
 results = a.query(k1, k2)
-for key, value in results:
-    print(key, " :: ", value)
+for value, key in results:
+    print(f"{value} :: {key}")
 
+# farewell message
+print("""Have a pleasant flight!""")
 
