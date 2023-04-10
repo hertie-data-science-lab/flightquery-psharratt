@@ -142,14 +142,14 @@ Please follow the instructions to complete your query:
     """)
     
 # Accepting input from user for origin airport, destination airport, earliest date, earliest time, latest date, and latest time
-origin = input("1. Enter origin airport: ") or None
-dest = input("2. Enter destination airport: ") or None
+origin = input("1. Enter origin airport (A, B, or C): ") or None
+dest = input("2. Enter destination airport (A, B, or C): ") or None
 earliest_date = input("3. Earliest Date (or press Enter for no preference): ") or str(a.get_min_date()-1)
 earliest_time = input("4. Earliest Time (or press Enter for no preference): ") or str(a.get_min_time()-1)
 latest_date = input("5. Latest Date (or press Enter for no preference): ") or None
 latest_time = input("6. Latest Time (or press Enter for no preference): ") or None
 
-# converting inputs to integers
+# Converting inputs to integers
 if earliest_date:
     earliest_date = int(earliest_date)
 if earliest_time:
