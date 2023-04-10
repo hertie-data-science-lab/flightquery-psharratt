@@ -11,7 +11,7 @@ Notes:
 
 Assumptions:
     - It is necessary to implement the find range method in one of the files and the book recommends implementing the method in the SortedTable Map class, which we did.
-    - The current implementation of the code excludes the lower and upper limits of searches.
+    - The current implementation of the code excludes the lower limits of searches.
     - We added more observations and values to the observations to test the robustness of the code.
 
 """
@@ -25,66 +25,102 @@ class FlightQuery(SortedTableMap):
     '''An application of SortedTableMap, used to query tickets of expeted period'''
     # Define a nested Key class to be used as keys in the table
     class Key:
-        # Define the slots to optimize memory usage
         __slots__ = "_origin", "_dest", "_date", "_time"
-        
-        # Initialize a Key object with the given values for the four attributes
+
         def __init__(self, origin, dest, date, time):
             self._origin = origin
             self._dest = dest
             self._date = date
             self._time = time
 
-        # Define the less than operator to compare Key objects        
+
         def __lt__(self, other):
-            # If the origin airports are different, sort by origin airport
             if self._origin != other._origin:
-                return other._origin is None or (self._origin is not None and self._origin < other._origin)
-            
-            # If the destination airports are different, sort by destination airport
+                return self._origin < other._origin
             if self._dest != other._dest:
-                return other._dest is None or (self._dest is not None and self._dest < other._dest)
-            
-            # If the dates are different, sort by date
+                return self._dest < other._dest
             if self._date != other._date:
-                return other._date is None or (self._date is not None and self._date < other._date)
-            
-            # If the times are different and not None, sort by time
-            if self._time is not None and other._time is not None:
+                if self._date is None:
+                    return False
+                if other._date is None:
+                    return True
+                return self._date < other._date
+            if self._time != other._time:
+                if self._time is None:
+                    return False
+                if other._time is None:
+                    return True
                 return self._time < other._time
-            
-            # If all attributes are equal, return False
             return False
-        
-        # Define the greater than operator to compare Key objects
+
         def __gt__(self, other):
-            # If the origin airports are different, sort by origin airport
             if self._origin != other._origin:
-                return self._origin is None or (other._origin is not None and self._origin > other._origin)
-            
-            # If the destination airports are different, sort by destination airport
+                return self._origin > other._origin
             if self._dest != other._dest:
-                return self._dest is None or (other._dest is not None and self._dest > other._dest)
-            
-            # If the dates are different, sort by date
+                return self._dest > other._dest
             if self._date != other._date:
-                return self._date is None or (other._date is not None and self._date > other._date)
-            
-            # If the times are different and not None, sort by time
-            if self._time is not None and other._time is not None:
+                if self._date is None:
+                    return True
+                if other._date is None:
+                    return False
+                return self._date > other._date
+            if self._time != other._time:
+                if self._time is None:
+                    return True
+                if other._time is None:
+                    return False
                 return self._time > other._time
-            
-            # If all attributes are equal, return False
             return False
-            
-        
+
+
+
+        def __ge__(self, other):
+            return not self.__lt__(other)
+
+        def __le__(self, other):
+            return not self.__gt__(other)
+
+
+
         # Define a string representation of the Key object
         def __str__(self):
             return "Origin: {0}, Destination: {1}, Date: {2}, Time: {3}".format(self._origin, self._dest, self._date, self._time)
         
-    # Define a query method that finds all key-value pairs between k1 and k2 (exclusive)
+    def find_range(self, start, stop):
+        if start is None:
+            j = 0
+        else:
+            j = self._find_index(start, False)  # find first result
+
+        while j < len(self._table) and (stop is None or self._table[j]._key <= stop):
+            if start is None or self._table[j]._key >= start:
+                yield (self._table[j]._key, self._table[j]._value)
+            j += 1
+
+        # Define a query method that finds all key-value pairs between k1 and k2 (exclusive)
     def query(self, k1, k2):
         return self.find_range(k1, k2)
+    
+    def get_min_date(self):
+        if not self:
+            return None
+        min_date = None
+        for item in self._table:
+            key = item._key
+            if min_date is None or key._date < min_date:
+                min_date = key._date
+        return min_date
+
+    def get_min_time(self):
+        if not self:
+            return None
+        min_time = None
+        for item in self._table:
+            key = item._key
+            if min_time is None or key._time < min_time:
+                min_time = key._time
+        return min_time
+
     
 
 # Create a FlightQuery object
@@ -97,19 +133,44 @@ for each in s:
     value = each[4]
     a[key] = value
 
-print(len(a))
 
+                        
+# Interface for inputing user queries
+print("""✈︎✈︎✈︎ Welcome to GenericFlightBooking.Com! ✈︎✈︎✈︎
+      
+Please follow the instructions to complete your query:
+    """)
+    
+# Accepting input from user for origin airport, destination airport, earliest date, earliest time, latest date, and latest time
+origin = input("1. Enter origin airport: ") or None
+dest = input("2. Enter destination airport: ") or None
+earliest_date = input("3. Earliest Date (or press Enter for no preference): ") or str(a.get_min_date()-1)
+earliest_time = input("4. Earliest Time (or press Enter for no preference): ") or str(a.get_min_time()-1)
+latest_date = input("5. Latest Date (or press Enter for no preference): ") or None
+latest_time = input("6. Latest Time (or press Enter for no preference): ") or None
 
-''' Please put in your lower limit (k1) and upper limit (k2); note that the limits themselves will be excluded in result
-    Use "None" to imply flexibility e.g. None in K1 means no lower limit None in any K2 means no prefrences concerning the upper limit
-'''
+# converting inputs to integers
+if earliest_date:
+    earliest_date = int(earliest_date)
+if earliest_time:
+    earliest_time = int(earliest_time)
+if latest_date:
+    latest_date = int(latest_date)
+if latest_time:
+    latest_time = int(latest_time)
+# Creating Key objects for search criteria
+k1 = a.Key(origin, dest, earliest_date, earliest_time)
+k2 = a.Key(origin, dest, latest_date, latest_time)
 
-k1 = a.Key("A", "B", None, 1000) #  
-k2 = a.Key("A", "B", 630, 1500) # Please put in the upper limite (note that the limit its)
+print(k1)
+print(k2)
+print("--- Please choose from the following flights: ---")
 
-
+# Run the query and print results
 results = a.query(k1, k2)
-for key, value in results:
-    print(key, " :: ", value)
+for value, key in results:
+    print(f"{value} :: {key}")
 
+# farewell message
+print("""Have a pleasant flight!""")
 
