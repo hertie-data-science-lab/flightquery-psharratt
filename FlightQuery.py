@@ -8,6 +8,7 @@ Notes:
     - Flight databases can be modeled as maps with Flight objects as keys and flight details as values. 
     - By ordering the keys lexicographically, we can efficiently find flights between cities, even with some flexibility in departure date and time. 
     - In this case, we used a sorted map implementation incorporating 'find range(k1, k2)'.
+    - Additionally, our solutio can handle 'None' values in the earliest and latest time and date user queries
 
 Assumptions:
     - It is necessary to implement the find range method in one of the files and the book recommends implementing the method in the SortedTable Map class, which we did.
